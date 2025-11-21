@@ -17,8 +17,13 @@
             <a href="#" class="nav-item">Top Rated</a>
             <a href="#" class="nav-item">Multiplayer</a>
         </nav>
-        <div class="search-box">
-            <input type="text" placeholder="Search games...">
+
+        <div class="controls">
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme" aria-pressed="false">☀️</button> 
+
+            <div class="search-box">
+                <input type="text" placeholder="Search games...">
+            </div>
         </div>
     </header>
 
@@ -35,12 +40,14 @@
                 <div class="game-item">
                     <div class="game-details">
                         <div class="game-icon-placeholder"></div>
-                        <p class="game-name">Astro Destroyer</p>
-                        <p class="game-desc">Place Quest</p>
+                        <div>
+                            <p class="game-name">Astro Destroyer</p>
+                            <p class="game-desc">Place Quest</p>
+                        </div>
                     </div>
                     <button class="play-button">Play</button>
                 </div>
-                </div>
+            </div>
         </aside>
 
         <section class="new-releases-games">
@@ -52,19 +59,196 @@
         <section class="action-games">
             <h2>Action Games</h2>
             <div class="game-list">
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/action_atari-breakout.webp" alt="Atari Breakout Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
+                        <div>
+                            <p class="game-name">Atari Breakout</p>
+                            <p class="game-desc">Smash the bricks with your paddle!</p>
+                        </div>
+                    </div>
+                    <button class="play-button" data-game="atari-breakout">Play</button>
                 </div>
+
+                <!-- Asteroid Dodger -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Asteroid Dodger</p>
+                            <p class="game-desc">Dodge falling space rocks!</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+
+                <!-- Clicker (Aim Trainer) -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Clicker (Aim Trainer)</p>
+                            <p class="game-desc">Click targets quickly for score.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+
+                <!-- Endless Jumper -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Endless Jumper</p>
+                            <p class="game-desc">Jump over obstacles to survive.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+
+                <!-- Color Switch -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Color Switch</p>
+                            <p class="game-desc">Match the ball's color to pass.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+            </div>
         </section>
 
         <section class="puzzle-games">
             <h2>Puzzle Games</h2>
             <div class="game-list">
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Solitaire (Klondike)</p>
+                            <p class="game-desc">The classic card game of patience.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
                 </div>
+
+                <!-- Memory Card Game -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Memory Card Game</p>
+                            <p class="game-desc">Find matching pairs of cards.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+
+                <!-- Sliding Puzzle -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Sliding Puzzle</p>
+                            <p class="game-desc">Rearrange numbered tiles in a grid.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+
+                <!-- Nonogram (Picross) -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Nonogram (Picross)</p>
+                            <p class="game-desc">Fill cells based on number clues.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+
+                <!-- Tower of Hanoi -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Tower of Hanoi</p>
+                            <p class="game-desc">Move disks between pegs by size.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+            </div>
         </section>
 
         <section class="sports-games">
             <h2>Sports Games</h2>
             <div class="game-list">
+                <!-- Street Soccer -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Street Soccer</p>
+                            <p class="game-desc">Fast-paced 3v3 soccer with simple controls and quick matches.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
                 </div>
+
+                <!-- Hoops Frenzy -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Hoops Frenzy</p>
+                            <p class="game-desc">Score as many baskets as possible in a timed shooting challenge.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+
+                <!-- Retro Rally (Racing) -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Retro Rally</p>
+                            <p class="game-desc">Arcade-style racing: drift through checkpoints and beat the clock.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+
+                <!-- Ace Tennis -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Ace Tennis</p>
+                            <p class="game-desc">Quick volleys and angle shots — simple controls, deep gameplay.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+
+                <!-- Extreme Skate -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Extreme Skate</p>
+                            <p class="game-desc">Pull off tricks and combos while avoiding obstacles in the skate park.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+            </div>
         </section>
 
         <section class="classic-games">
@@ -76,7 +260,27 @@
         <section class="retro-games">
             <h2>Retro Games</h2>
             <div class="game-list">
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Snake</p>
+                            <p class="game-desc">Eat, grow, and avoid crashing!</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
                 </div>
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder"></div>
+                        <div>
+                            <p class="game-name">Pac-man</p>
+                            <p class="game-desc">Chomp dots and evade the ghosts.</p>
+                        </div>
+                    </div>
+                    <button class="play-button">Play</button>
+                </div>
+            </div>
         </section>
         
         <section class="history-section">
@@ -86,5 +290,23 @@
         </section>
         
     </main>
+
+    <!-- Add game modal near the end of body (just before scripts) -->
+    <div id="breakout-modal" class="breakout-modal" aria-hidden="true" style="display:none;">
+        <div class="breakout-wrapper" role="dialog" aria-modal="true" aria-label="Atari Breakout">
+            <canvas id="breakout-canvas" width="800" height="560"></canvas>
+            <div class="breakout-ui">
+                <div id="breakout-hud" class="breakout-hud"></div>
+                <div class="breakout-controls">
+                    <button id="breakout-quit" class="play-button">Quit</button>
+                    <button id="breakout-restart" class="play-button" style="display:none;">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/breakout.js"></script>
+    <script src="scripts/theme.js"></script>
 </body>
 </html>

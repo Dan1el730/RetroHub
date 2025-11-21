@@ -6,12 +6,13 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Default Dark Theme Variables */
 :root {
-    --primary-color: #00e0ff; /* Bright Cyan/Blue for buttons and accents (like a neon glow) */
+    --primary-color: #00e0ff; /* Bright Cyan/Blue for accents (neon glow) */
     --secondary-color: #ff9900; /* Orange/Gold for visual hierarchy elements */
     --background-color: #0d0d2a; /* Very dark blue space background */
     --text-color: #ffffff;
-    --container-bg: rgba(255, 255, 255, 0.04); /* Slightly transparent white for sections */
+    --container-bg: rgba(255, 255, 255, 0.04); /* Transparent white for sections */
     --border-color: #00e0ff;
     --dark-section-bg: rgba(0, 0, 0, 0.3); /* Dark background for list items */
 }
@@ -33,10 +34,11 @@ header {
     align-items: center;
     padding: 15px 40px;
     border-bottom: 2px solid rgba(0, 224, 255, 0.2);
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent header background */
+    background-color: rgba(0, 0, 0, 0.5);
     position: sticky;
     top: 0;
     z-index: 100;
+    gap: 16px; /* small gap between flex children */
 }
 
 .logo {
@@ -47,9 +49,13 @@ header {
     text-shadow: 0 0 5px rgba(0, 224, 255, 0.5); /* Neon glow effect */
 }
 
+/* Make the nav shrink instead of pushing other controls off-screen */
 .main-nav {
     display: flex;
     gap: 25px;
+    flex: 1 1 auto; /* allow nav to shrink/grow */
+    min-width: 0;   /* permit flex child to shrink below its content width */
+    justify-content: center; /* keep items centered when space allows */
 }
 
 .nav-item {
@@ -59,11 +65,41 @@ header {
     padding: 8px 0;
     transition: color 0.3s, border-bottom 0.3s;
     border-bottom: 2px solid transparent;
+    white-space: nowrap; /* Prevent nav items forcing a huge width (no wrapping text) */
 }
 
 .nav-item:hover {
     color: var(--primary-color);
     border-bottom: 2px solid var(--primary-color);
+}
+
+/* --- NEW: Theme Toggle Button Styling --- */
+/* New: container for the toggle + search so they stay together and visible */
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 auto; /* do not allow controls to be shrunk away */
+}
+
+.theme-toggle {
+    background: none;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    font-size: 1.5em;
+    padding: 5px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%; /* Makes it a circle */
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, transform 0.1s;
+    margin: 0 20px;
+    z-index: 101; /* keep above adjacent elements */
+    position: relative;
+}
+
+.theme-toggle:hover {
+    background-color: rgba(0, 224, 255, 0.1);
 }
 
 .search-box input {
@@ -124,7 +160,6 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* In a real implementation, this would be an <img> tag */
     font-size: 1.2em;
     color: #ccc;
     text-align: center;
@@ -143,7 +178,6 @@ main {
 /* --- Game Category Sections Below Featured Area --- */
 
 /* All sections (New Releases, Action, Puzzle, etc.) will flow below the initial 2-column layout */
-/* We need to reset the grid column span for these to allow them to flow nicely. */
 .new-releases-games, 
 .action-games, 
 .puzzle-games, 
@@ -160,7 +194,8 @@ main {
 /* Use grid again for the individual lists within the sections to display game cards */
 .game-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    /* Stack items vertically so each game panel takes one full row */
+    grid-template-columns: 1fr;
     gap: 20px;
     margin-top: 15px;
 }
@@ -199,23 +234,21 @@ main {
     gap: 15px;
 }
 
+/* Make game icons wider/horizontal and larger */
 .game-icon-placeholder {
-    min-width: 50px; /* Use min-width to ensure it doesn't shrink */
-    height: 50px;
+    width: 160px;      /* Make width and height equal for square shape */
+    height: 160px;     /* Increased size for much larger icons */
     background-color: #888; 
-    border-radius: 6px;
+    border-radius: 10px; /* slightly larger rounding */
     border: 2px solid var(--text-color);
 }
 
-.game-name {
-    font-weight: bold;
-    font-size: 1.1em;
-    line-height: 1.2;
-}
-
-.game-desc {
-    font-size: 0.85em;
-    color: #bbb;
+/* Responsive: scale down on small screens */
+@media (max-width: 720px) {
+    .game-icon-placeholder {
+        width: 90px;
+        height: 90px;
+    }
 }
 
 .play-button {
@@ -238,4 +271,182 @@ main {
 /* History section - content might look different */
 .history-section .game-list {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+
+/* --- NEW: Light Theme Overrides (Body Class: light-theme) --- */
+
+body.light-theme {
+    /* Base Color Changes */
+    --primary-color: #007bff;        /* Standard Blue for accents */
+    --secondary-color: #ff0000;      /* <-- changed to RED for outlines and logo */
+    --background-color: #f0f0f5;     /* Light gray background */
+    --text-color: #333333;           /* Dark text */
+    --container-bg: rgba(255, 255, 255, 0.95); /* Near-opaque white sections */
+    --border-color: #ff0000;         /* <-- ensure borders/outlines use RED in light mode */
+    --dark-section-bg: #e0e0e0;      /* Lighter gray list item background */
+    
+    /* Override background image/color */
+    background-image: none;
+    background-color: var(--background-color); 
+}
+
+body.light-theme .logo {
+    color: var(--secondary-color); 
+    text-shadow: none; /* Remove neon glow */
+    /* subtle stroke to make the red logo stand out on light backgrounds */
+    -webkit-text-stroke: 0.3px rgba(255, 0, 0, 0.6);
+}
+
+body.light-theme header {
+    background-color: var(--container-bg);
+    border-bottom: 2px solid #ccc;
+}
+
+body.light-theme .nav-item:hover {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+body.light-theme .search-box input {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    color: var(--text-color);
+}
+
+body.light-theme .search-box input:focus {
+    border-color: var(--primary-color);
+}
+
+/* Light Theme Toggle Button */
+body.light-theme .theme-toggle {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+    background-color: #fff;
+}
+body.light-theme .theme-toggle:hover {
+     background-color: #f0f0f5;
+}
+
+
+/* Light Theme Game Sections */
+body.light-theme .featured-game {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow instead of glow */
+    border-color: #ccc;
+}
+
+body.light-theme .game-icon-placeholder {
+     border: 2px solid var(--secondary-color);
+}
+
+body.light-theme .game-item {
+    background-color: var(--dark-section-bg);
+}
+
+body.light-theme .game-item:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+}
+
+body.light-theme .game-desc {
+    color: #666;
+}
+
+body.light-theme .content-grid h2 {
+    color: var(--secondary-color);
+    border-left: 5px solid var(--primary-color);
+}
+
+body.light-theme .play-button {
+    background-color: var(--primary-color);
+    color: #ffffff; 
+}
+body.light-theme .play-button:hover {
+     background-color: #0056b3;
+}
+
+/* Small-screen tweak: reduce nav gap and make header wrap if needed */
+@media (max-width: 720px) {
+    header {
+        padding: 12px;
+    }
+    .main-nav {
+        gap: 12px;
+    }
+    .theme-toggle {
+        margin: 0 8px;
+        width: 40px;
+        height: 40px;
+        font-size: 1.1em;
+    }
+}
+
+/* Breakout modal & canvas */
+.breakout-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5,7,20,0.75);
+    z-index: 1000;
+    padding: 20px;
+}
+
+.breakout-wrapper {
+    background: linear-gradient(180deg, rgba(0,0,0,0.85), rgba(10,10,30,0.95));
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Canvas: responsive but with a fixed aspect ratio */
+#breakout-canvas {
+    background: #081028;
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.6), 0 0 18px rgba(0, 224, 255, 0.08);
+    max-width: calc(100vw - 80px);
+    width: 800px;
+    height: 560px;
+}
+
+/* HUD & controls */
+.breakout-ui {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    gap: 12px;
+}
+
+.breakout-hud {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95em;
+    padding-left: 8px;
+}
+
+/* Reuse .play-button styles but ensure visible in modal */
+.breakout-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Small screens: scale canvas down */
+@media (max-width: 900px) {
+    #breakout-canvas {
+        width: 720px;
+        height: 504px;
+    }
+}
+@media (max-width: 600px) {
+    #breakout-canvas {
+        width: calc(100vw - 40px);
+        height: calc((100vw - 40px) * 0.7);
+    }
 }
