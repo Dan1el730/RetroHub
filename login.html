@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>RetroHub — Login</title>
+	<link rel="stylesheet" href="styles.css">
+	<style>
+		/* minimal inline layout tweak for the auth forms */
+		.auth-container { max-width:420px;margin:60px auto;padding:20px;border-radius:8px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.08); }
+		.auth-field { display:block;width:100%;padding:10px;margin:8px 0;border:1px solid #ddd;border-radius:6px; }
+		.auth-actions { display:flex;gap:8px;margin-top:12px; }
+		.btn { padding:10px 14px;border-radius:6px;border:0;cursor:pointer; }
+		.btn-blue { background:#2b8cff;color:#fff; }
+		.btn-green { background:#2dd36f;color:#fff; }
+		.btn-ghost { background:#f0f0f0;color:#333; }
+	</style>
+</head>
+<body>
+	<div class="auth-container" role="main" aria-label="Login form">
+		<h1>Login</h1>
+		<p>Login to record your scores. Not mandatory — you can play as guest.</p>
+
+		<label>
+			<input id="username" class="auth-field" placeholder="Username" autocomplete="username">
+		</label>
+		<label>
+			<input id="password" type="password" class="auth-field" placeholder="Password" autocomplete="current-password">
+		</label>
+
+		<div class="auth-actions">
+			<button id="login-btn" class="btn btn-blue">Log In</button>
+			<button id="go-register" class="btn btn-green">Register</button>
+			<button id="guest-btn" class="btn btn-ghost">Play as Guest</button>
+		</div>
+
+		<div id="msg" style="margin-top:12px;color:#b00;"></div>
+	</div>
+
+	<script src="scripts/auth.js"></script>
+	<script>
+		const loginBtn = document.getElementById('login-btn');
+		const regBtn = document.getElementById('go-register');
+		const guestBtn = document.getElementById('guest-btn');
+		const msg = document.getElementById('msg');
+
+		loginBtn.addEventListener('click', async () => {
+			msg.textContent = '';
+			const u = document.getElementById('username').value.trim();
+			const p = document.getElementById('password').value;
+			try {
+				await window.auth.login(u, p);
+				// back to index after login
+				window.location.href = 'index.html';
+			} catch (e) {
+				msg.textContent = e.message || 'Login failed';
+			}
+		});
+
+		regBtn.addEventListener('click', () => {
+			window.location.href = 'register.html';
+		});
+
+		guestBtn.addEventListener('click', () => {
+			window.auth.setGuest();
+			window.location.href = 'index.html';
+		});
+	</script>
+</body>
+</html>

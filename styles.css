@@ -18,12 +18,9 @@
 }
 
 body {
-    background-color: var(--background-color);
+    /* Replace missing image with a safe gradient fallback */
+    background: linear-gradient(180deg,#07102a 0%, #0d0d2a 60%, #050510 100%);
     color: var(--text-color);
-    /* Placeholder for the starry/cosmic background image */
-    background-image: url('starry_background.jpg'); 
-    background-size: cover;
-    background-attachment: fixed;
     padding: 0;
 }
 

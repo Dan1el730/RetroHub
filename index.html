@@ -5,13 +5,147 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RetroHub: Free Online Arcade</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Categories dropdown styles */
+        .nav-item.dropdown {
+            position: relative;
+            cursor: pointer;
+        }
+        .nav-item.dropdown .dropdown-toggle {
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            background:transparent;
+            border:0;
+            padding:0;
+            color:inherit;
+            font:inherit;
+            cursor:pointer;
+        }
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            min-width: 180px;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            border-radius: 6px;
+            display: none;
+            z-index: 40;
+        }
+        .dropdown-menu.open { display: block; }
+        .dropdown-menu button {
+            display:block;
+            width:100%;
+            padding:10px 12px;
+            border:0;
+            background:transparent;
+            text-align:left;
+            cursor:pointer;
+        }
+        .dropdown-menu button:hover { background: rgba(0,0,0,0.04); }
+        .category-hidden { display: none !important; }
+        /* ensure game-item hide works */
+        .game-item.hidden { display: none !important; }
+
+        /* Sliding puzzle modal & board minimal styles (dark theme) */
+        .sliding-modal { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.7); z-index:9999; }
+        .sliding-wrapper { background:#111; color:#fff; padding:16px; border-radius:10px; width:min(720px,95%); max-height:90vh; overflow:auto; box-shadow:0 10px 40px rgba(0,0,0,.6); }
+        .sp-board { display:grid; gap:6px; background:#0b0b0b; padding:6px; border-radius:8px; margin-bottom:12px; }
+        .sp-tile { display:flex; align-items:center; justify-content:center; background:#1e1e1e; color:#fff; font-weight:700; border-radius:6px; user-select:none; cursor:pointer; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.6); }
+        .sp-tile.blank { background: transparent; cursor: default; }
+        .sp-controls { margin-top:10px; display:flex; gap:8px; justify-content:flex-end; }
+        .btn { padding:8px 12px; border-radius:6px; border:0; cursor:pointer; }
+        .btn-quit { background:#ff6b6b; color:#fff; }
+        .btn-restart { background:#2b8cff; color:#fff; }
+        .sp-stats { display:flex; gap:20px; justify-content:flex-start; color:#fff; font-weight:600; margin-top:6px; }
+        .sp-msg { margin-top:10px; font-weight:600; color:#ffd; }
+
+        /* New dark modals for 2048 & Snake (consistent with sliding puzzle theme) */
+        .game-modal { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.75); z-index:9999; }
+        .game-wrapper { background:#0d0f12; color:#ffffff; padding:14px; border-radius:10px; width:min(760px,96%); max-height:92vh; overflow:auto; box-shadow:0 12px 32px rgba(0,0,0,.7); }
+        .game-board { display:grid; gap:6px; background:#070708; padding:6px; border-radius:8px; margin-bottom:10px; justify-content:center; }
+        .game-tile { display:flex; align-items:center; justify-content:center; background:#1b1d20; color:#fff; font-weight:700; border-radius:6px; user-select:none; }
+        .game-controls { display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
+        .btn { padding:8px 12px; border-radius:6px; border:0; cursor:pointer; }
+        .btn-quit { background:#e84a4a; color:#fff; }
+        .btn-restart { background:#2b8cff; color:#fff; }
+        .game-hud { display:flex; gap:20px; color:#fff; font-weight:700; margin-top:6px; align-items:center; }
+        .game-msg { margin-top:8px; color:#ffd;border-radius:4px;padding:6px 8px;background:rgba(255,255,255,0.02); }
+
+        /* Search message styles */
+        .search-message { display:none; padding:12px 16px; background: #fff3cd; color:#7a4b00; border-radius:6px; margin:12px 0; font-weight:600; }
+
+        /* Fix header layout so search does not overlap the auth button */
+        header .controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: flex-start; /* keep toggle + search left */
+        }
+        /* Search box occupies a flexible but bounded slot */
+        header .search-box {
+            flex: 0 1 320px; /* preferred width */
+            min-width: 140px;
+            max-width: 520px;
+            order: 0;
+        }
+        header .search-box input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+        }
+        /* Auth area stays fixed on the right */
+        header .auth-area {
+            flex: 0 0 auto;
+            margin-left: auto; /* push auth button to right */
+            z-index: 3;
+            order: 2;
+        }
+        #auth-btn {
+            position: relative;
+            z-index: 9999;
+            pointer-events: auto;
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+            color: inherit;
+            cursor: pointer;
+        }
+
+        /* Theme-specific outlines */
+        body.dark #auth-btn,
+        body.theme-dark #auth-btn,
+        [data-theme="dark"] #auth-btn { outline: 2px solid #ffd400; outline-offset: 3px; }
+        body:not(.dark) #auth-btn,
+        body.theme-light #auth-btn,
+        [data-theme="light"] #auth-btn { outline: 2px solid #ff4d4d; outline-offset: 3px; }
+
+        /* Small screens */
+        @media (max-width:700px) {
+            header .search-box { flex: 1 1 auto; max-width: none; }
+        }
+    </style>
 </head>
 <body>
     <header>
         <div class="logo">RetroHub</div>
         <nav class="main-nav">
-            <a href="#" class="nav-item">All Games</a>
-            <a href="#" class="nav-item">Categories</a>
+            <a href="#" class="nav-item" id="nav-all">All Games</a>
+
+            <!-- Categories dropdown (replaces previous simple Categories link) -->
+            <div class="nav-item dropdown" id="nav-categories" aria-haspopup="true" aria-expanded="false">
+                <button class="dropdown-toggle" id="categories-toggle" type="button" aria-label="Categories">
+                    Categories ▾
+                </button>
+                <div class="dropdown-menu" id="categories-menu" role="menu" aria-labelledby="categories-toggle">
+                    <!-- Buttons populated by scripts/categories.js -->
+                </div>
+            </div>
+
             <a href="#" class="nav-item">Popular</a>
             <a href="#" class="nav-item">New Games</a>
             <a href="#" class="nav-item">Top Rated</a>
@@ -19,15 +153,25 @@
         </nav>
 
         <div class="controls">
-            <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme" aria-pressed="false">☀️</button> 
+            <!-- theme toggle stays left -->
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme" aria-pressed="false">☀️</button>
 
-            <div class="search-box">
-                <input type="text" placeholder="Search games...">
+            <!-- search input (kept left) -->
+            <div class="search-box" role="search">
+                <input id="search-input" type="text" placeholder="Search games..." aria-label="Search games">
+            </div>
+
+            <!-- Recreated auth area: separate container, button guaranteed to be on top and clickable -->
+            <div class="auth-area" aria-live="polite">
+                <button id="auth-btn" type="button" aria-label="Account">Login</button>
             </div>
         </div>
     </header>
 
     <main class="content-grid">
+        <!-- Search message / results info -->
+        <div id="search-message" class="search-message" role="status" aria-live="polite"></div>
+
         <section class="featured-game">
             <h2 class="featured-title">Featured Game: Space Quest</h2>
             <div class="game-image-placeholder">
@@ -75,7 +219,9 @@
                 <!-- Asteroid Dodger -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/action_asteroid-dodger.webp" alt="Asteroid Dodger Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Asteroid Dodger</p>
                             <p class="game-desc">Dodge falling space rocks!</p>
@@ -87,7 +233,9 @@
                 <!-- Clicker (Aim Trainer) -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/action_clicker.webp" alt="Clicker Aim Trainer Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Clicker (Aim Trainer)</p>
                             <p class="game-desc">Click targets quickly for score.</p>
@@ -99,7 +247,9 @@
                 <!-- Endless Jumper -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/action_endless-jumper.webp" alt="Endless Jumper Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Endless Jumper</p>
                             <p class="game-desc">Jump over obstacles to survive.</p>
@@ -111,7 +261,9 @@
                 <!-- Color Switch -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/action_color_switch.webp" alt="Color Switch Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Color Switch</p>
                             <p class="game-desc">Match the ball's color to pass.</p>
@@ -127,7 +279,9 @@
             <div class="game-list">
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/puzzle_solitaire.webp" alt="Solitaire Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Solitaire (Klondike)</p>
                             <p class="game-desc">The classic card game of patience.</p>
@@ -139,7 +293,9 @@
                 <!-- Memory Card Game -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/puzzle_memory-card-game.webp" alt="Memory Card Game Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Memory Card Game</p>
                             <p class="game-desc">Find matching pairs of cards.</p>
@@ -151,19 +307,23 @@
                 <!-- Sliding Puzzle -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/puzzle_sliding-puzzle.webp" alt="Sliding Puzzle Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Sliding Puzzle</p>
                             <p class="game-desc">Rearrange numbered tiles in a grid.</p>
                         </div>
                     </div>
-                    <button class="play-button">Play</button>
+                    <button class="play-button" data-game="sliding-puzzle">Play</button>
                 </div>
 
                 <!-- Nonogram (Picross) -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/puzzle_nonogram.webp" alt="Nonogram Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Nonogram (Picross)</p>
                             <p class="game-desc">Fill cells based on number clues.</p>
@@ -175,7 +335,9 @@
                 <!-- Tower of Hanoi -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/puzzle_tower-of-hanoi.webp" alt="Tower of Hanoi Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Tower of Hanoi</p>
                             <p class="game-desc">Move disks between pegs by size.</p>
@@ -192,7 +354,9 @@
                 <!-- Street Soccer -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/sports_street-soccer.webp" alt="Street Soccer Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Street Soccer</p>
                             <p class="game-desc">Fast-paced 3v3 soccer with simple controls and quick matches.</p>
@@ -204,7 +368,9 @@
                 <!-- Hoops Frenzy -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/sports_hoops-frenzy.webp" alt="Hoops Frenzy Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Hoops Frenzy</p>
                             <p class="game-desc">Score as many baskets as possible in a timed shooting challenge.</p>
@@ -216,7 +382,9 @@
                 <!-- Retro Rally (Racing) -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/sports_retro-rally.webp" alt="Retro Rally Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Retro Rally</p>
                             <p class="game-desc">Arcade-style racing: drift through checkpoints and beat the clock.</p>
@@ -228,7 +396,9 @@
                 <!-- Ace Tennis -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/sports_ace-tennis.webp" alt="Ace Tennis Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Ace Tennis</p>
                             <p class="game-desc">Quick volleys and angle shots — simple controls, deep gameplay.</p>
@@ -240,7 +410,9 @@
                 <!-- Extreme Skate -->
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/sports_extreme-skate.webp" alt="Extreme Skate Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Extreme Skate</p>
                             <p class="game-desc">Pull off tricks and combos while avoiding obstacles in the skate park.</p>
@@ -251,34 +423,72 @@
             </div>
         </section>
 
-        <section class="classic-games">
-            <h2>Classic Games</h2>
-            <div class="game-list">
-                </div>
-        </section>
-
         <section class="retro-games">
             <h2>Retro Games</h2>
             <div class="game-list">
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/retro_snake.webp" alt="Snake Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Snake</p>
                             <p class="game-desc">Eat, grow, and avoid crashing!</p>
                         </div>
                     </div>
-                    <button class="play-button">Play</button>
+                    <button class="play-button" data-game="snake">Play</button>
                 </div>
                 <div class="game-item">
                     <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/retro_pac-man.webp" alt="Pac-man Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
                         <div>
                             <p class="game-name">Pac-man</p>
                             <p class="game-desc">Chomp dots and evade the ghosts.</p>
                         </div>
                     </div>
-                    <button class="play-button">Play</button>
+                    <button class="play-button" data-game="pac-man">Play</button>
+                </div>
+
+                <!-- 2048 -->
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/retro_2048.webp" alt="2048 Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
+                        <div>
+                            <p class="game-name">2048</p>
+                            <p class="game-desc">Merge matching tiles to reach 2048!</p>
+                        </div>
+                    </div>
+                    <button class="play-button" data-game="game-2048">Play</button>
+                </div>
+
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/retro_tic-tac-toe.webp" alt="Tic Tac Toe Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
+                        <div>
+                            <p class="game-name">Tic Tac Toe</p>
+                            <p class="game-desc">Get three in a row to win!</p>
+                        </div>
+                    </div>
+                    <button class="play-button" data-game="tic-tac-toe">Play</button>
+                </div>
+
+                <div class="game-item">
+                    <div class="game-details">
+                        <div class="game-icon-placeholder">
+                            <img src="img/thumbnails/retro_connect-4.webp" alt="Connect 4 Thumbnail" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                        </div>
+                        <div>
+                            <p class="game-name">Connect 4</p>
+                            <p class="game-desc">Connect four of your color vertically, horizontally, or diagonally.</p>
+                        </div>
+                    </div>
+                    <button class="play-button" data-game="connect-4">Play</button>
                 </div>
             </div>
         </section>
@@ -305,8 +515,100 @@
         </div>
     </div>
 
+    <!-- Sliding Puzzle modal (updated: dark theme; HUD below board with Score / Level / Time Remaining) -->
+    <div id="sliding-modal" class="sliding-modal" aria-hidden="true" role="dialog" aria-label="Sliding Puzzle">
+        <div class="sliding-wrapper" role="document">
+            <div id="sp-board" class="sp-board" aria-live="polite"></div>
+
+            <!-- Stats: Score / Level / Time Remaining -->
+            <div class="sp-stats" aria-live="polite">
+                <div>Score: <span id="sp-score">0</span></div>
+                <div>Level: <span id="sp-level">—</span></div>
+                <div>Time Remaining: <span id="sp-remaining">00:00</span></div>
+            </div>
+
+            <div class="sp-controls">
+                <button id="sp-restart" class="btn btn-restart">Restart</button>
+                <button id="sp-giveup" class="btn" style="background:#ffb84d;color:#111;">Give Up</button>
+                <button id="sp-quit" class="btn btn-quit">Quit</button>
+            </div>
+
+            <div id="sp-user" class="sp-msg" aria-live="polite"></div>
+            <div id="sp-msg" class="sp-msg" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <!-- 2048 modal -->
+    <div id="game-2048-modal" class="game-modal" aria-hidden="true" role="dialog" aria-label="2048">
+        <div class="game-wrapper" role="document">
+            <div id="game-2048-board" class="game-board" aria-live="polite"></div>
+
+            <div class="game-hud">
+                <div>Score: <span id="g2048-score">0</span></div>
+                <div>Time: <span id="g2048-time">00:00</span></div>
+            </div>
+
+            <div class="game-controls">
+                <button id="g2048-restart" class="btn btn-restart">Restart</button>
+                <button id="g2048-giveup" class="btn" style="background:#ffb84d;color:#111;">Give Up</button>
+                <button id="g2048-quit" class="btn btn-quit">Quit</button>
+            </div>
+
+            <div id="g2048-msg" class="game-msg" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <!-- Snake modal -->
+    <div id="snake-modal" class="game-modal" aria-hidden="true" role="dialog" aria-label="Snake">
+        <div class="game-wrapper" role="document">
+            <div id="snake-board" class="game-board" aria-live="polite"></div>
+
+            <div class="game-hud">
+                <div>Score: <span id="snake-score">0</span></div>
+                <div>Time: <span id="snake-time">00:00</span></div>
+            </div>
+
+            <div class="game-controls">
+                <button id="snake-restart" class="btn btn-restart">Restart</button>
+                <button id="snake-quit" class="btn btn-quit">Quit</button>
+            </div>
+
+            <div id="snake-msg" class="game-msg" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <!-- Submit score modal (reusable) -->
+    <div id="submit-score-modal" class="game-modal" aria-hidden="true" role="dialog" aria-label="Submit score">
+        <div class="game-wrapper" role="document" style="max-width:420px;">
+            <h3 id="ss-title" style="margin:0 0 8px 0;color:#fff;">Submit your high score?</h3>
+            <p id="ss-msg" style="color:#ddd;margin:0 0 12px 0;">You beat the highest score.</p>
+
+            <label style="display:block;margin-bottom:8px;color:#ddd;">
+                Name:
+                <input id="ss-name" style="width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #333;background:#0b0b0b;color:#fff;">
+            </label>
+
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
+                <button id="ss-cancel" class="btn" style="background:#444;color:#fff;">Cancel</button>
+                <button id="ss-submit" class="btn btn-restart">Submit</button>
+            </div>
+
+            <div id="ss-note" style="margin-top:10px;color:#ffd;"></div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="scripts/breakout.js"></script>
     <script src="scripts/theme.js"></script>
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/auth-ui.js"></script>
+    <script src="scripts/categories.js"></script>
+    <script src="scripts/metrics.js"></script>
+    <script src="scripts/submit-ui.js"></script>
+
+    <script src="scripts/sliding-puzzle.js"></script>
+    <script src="scripts/game-2048.js"></script>
+    <script src="scripts/snake.js"></script>
+    <script src="scripts/search.js"></script>
 </body>
 </html>
