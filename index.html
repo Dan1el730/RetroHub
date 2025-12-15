@@ -124,6 +124,27 @@
         body.theme-light #auth-btn,
         [data-theme="light"] #auth-btn { outline: 2px solid #ff4d4d; outline-offset: 3px; }
 
+        /* Leaderboard bar (top of page) */
+        #leaderboard-bar {
+            width: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(0,224,255,0.02));
+            color: #fff;
+            padding: 8px 20px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 110; /* above header */
+        }
+        #leaderboard-bar .lb-inner { display:flex; gap:16px; align-items:center; }
+        #leaderboard-bar .lb-item { display:flex; flex-direction:column; align-items:center; min-width:120px; }
+        #leaderboard-bar .lb-name { font-weight:700; color:#ffd; }
+        #leaderboard-bar .lb-score { font-weight:900; color:var(--primary-color); font-size:1.05em; }
+        #leaderboard-refresh { margin-left:12px; padding:6px 10px; border-radius:6px; border:0; background:#2b8cff; color:#fff; cursor:pointer; }
+
         /* Small screens */
         @media (max-width:700px) {
             header .search-box { flex: 1 1 auto; max-width: none; }
@@ -131,6 +152,13 @@
     </style>
 </head>
 <body>
+    <!-- Leaderboard: Top 3 players -->
+    <div id="leaderboard-bar" aria-live="polite" role="status">
+        <div class="lb-inner" id="lb-inner">
+            <!-- items populated by scripts/leaderboard.js -->
+        </div>
+        <button id="leaderboard-refresh" title="Refresh leaderboard">Refresh</button>
+    </div>
     <header>
         <div class="logo">RetroHub</div>
         <nav class="main-nav">
@@ -146,10 +174,8 @@
                 </div>
             </div>
 
-            <a href="#" class="nav-item">Popular</a>
-            <a href="#" class="nav-item">New Games</a>
-            <a href="#" class="nav-item">Top Rated</a>
-            <a href="#" class="nav-item">Multiplayer</a>
+            <a href="#" class="nav-item" id="nav-popular">Sort by Popularity</a>
+            <a href="#" class="nav-item" id="nav-leaderboard">Leaderboard</a>
         </nav>
 
         <div class="controls">
@@ -174,13 +200,13 @@
 
         <section class="featured-game">
             <h2 class="featured-title">Featured Game: Space Quest</h2>
-            <div class="game-image-placeholder">
+            <div id="featured-placeholder" class="game-image-placeholder">
                 </div>
         </section>
 
         <aside class="top-games">
             <h2>Most Played</h2>
-            <div class="game-list">
+            <div id="top-games-list" class="game-list">
                 <div class="game-item">
                     <div class="game-details">
                         <div class="game-icon-placeholder"></div>
@@ -606,6 +632,9 @@
     <script src="scripts/metrics.js"></script>
     <script src="scripts/submit-ui.js"></script>
 
+    <!-- Leaderboard (shows Top 3 players: Daniel, Alice, Bob) -->
+    <script src="scripts/leaderboard.js"></script>
+    
     <script src="scripts/sliding-puzzle.js"></script>
     <script src="scripts/game-2048.js"></script>
     <script src="scripts/snake.js"></script>
