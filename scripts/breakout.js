@@ -222,13 +222,15 @@
 
 	// High-score handling helpers
 	function submitOrPrompt(gameKey, sc) {
+		// unified: attempt to record via rhSubmit; if not possible, dispatch fallback event
 		try {
-			if (window.rhSubmit && typeof window.rhSubmit.promptIfHigher === 'function') {
-				const shown = window.rhSubmit.promptIfHigher(gameKey, sc);
-				if (!shown) {
-					// fallback dispatch
-					dispatchFallback(gameKey, sc);
-				}
+			if (window.rhSubmit && typeof window.rhSubmit.recordScore === 'function') {
+				window.rhSubmit.recordScore(gameKey, sc).then(saved => {
+					if (!saved) {
+						// not saved => dispatch fallback for any listeners
+						dispatchFallback(gameKey, sc);
+					}
+				}).catch(() => dispatchFallback(gameKey, sc));
 			} else {
 				dispatchFallback(gameKey, sc);
 			}
@@ -246,8 +248,7 @@
 	}
 
 	function onGameOver() {
-		// show overlay using canvas rendering (already drawn), then prompt
-		// defer teardown to let prompt show
+		// show overlay using canvas rendering (already drawn), then prompt/save
 		setTimeout(() => {
 			submitOrPrompt('atari-breakout', score);
 			// ensure modal closed

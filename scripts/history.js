@@ -12,10 +12,7 @@
 		const authBtn = document.getElementById('auth-btn');
 		if(authBtn && authBtn.dataset && authBtn.dataset.username) return authBtn.dataset.username;
 		// if auth button shows a name (not "Login"), treat as signed-in
-		if(authBtn && authBtn.textContent){
-			const txt = authBtn.textContent.trim();
-			if(txt && txt.toLowerCase() !== 'login' && txt.toLowerCase() !== 'sign in') return txt;
-		}
+		if(authBtn && authBtn.textContent && authBtn.textContent.trim() && authBtn.textContent.trim() !== 'Login') return authBtn.textContent.trim();
 		// no authenticated user
 		return null;
 	}
@@ -81,11 +78,15 @@
 		const section = container.closest('.history-section');
 		if(section) section.style.display = '';
 		container.innerHTML = '';
+
+		// sanitize display name: remove any parenthesized labels like "(Logout)"
+		const displayName = (typeof user === 'string') ? user.replace(/\s*\(.*?\)\s*/g,'').trim() : String(user);
+
 		const panel = document.createElement('div');
 		panel.className = 'history-panel';
 		const header = document.createElement('div');
 		header.className = 'hp-header';
-		header.innerHTML = `<div>${user}</div><div style="opacity:.7;font-size:.9em">Most recent →</div>`;
+		header.innerHTML = `<div>${displayName}</div><div style="opacity:.7;font-size:.9em">Most recent →</div>`;
 		panel.appendChild(header);
 
 		const icons = document.createElement('div');

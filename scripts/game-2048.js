@@ -45,12 +45,15 @@
 	const giveUpBtn = document.getElementById('g2048-giveup');
 	if (giveUpBtn) {
 		giveUpBtn.addEventListener('click', () => {
-			// treat as finish and prompt if higher
+			// treat as finish and prompt if higher -> now unified auto-save-if-higher
 			stopTimer();
 			running = false;
 			msgEl.textContent = `You gave up. Final score: ${score}`;
-			if (window.rhSubmit && window.rhSubmit.promptIfHigher) {
-				window.rhSubmit.promptIfHigher('game-2048', score);
+			if (window.rhSubmit && typeof window.rhSubmit.recordScore === 'function') {
+				window.rhSubmit.recordScore('game-2048', score).then(saved => {
+					if (saved) msgEl.textContent += ' — Score saved.';
+					else msgEl.textContent += ' — Not saved (guest or below your best).';
+				}).catch(()=>{ msgEl.textContent += ' — Save failed.'; });
 			}
 		});
 	}
@@ -184,11 +187,12 @@
 				msgEl.textContent = 'Game over';
 				stopTimer();
 				running = false;
-				// prompt to submit score if higher
 				try {
-					if (!(window.rhSubmit && window.rhSubmit.promptIfHigher && window.rhSubmit.promptIfHigher('game-2048', score))) {
-						// not higher or prompt unavailable: fallback to dispatch/save as before
-						window.dispatchEvent(new CustomEvent('rh:submit-score', { detail: { game: 'game-2048', score: score, username: null } }));
+					if (window.rhSubmit && typeof window.rhSubmit.recordScore === 'function') {
+						window.rhSubmit.recordScore('game-2048', score).then(saved => {
+							if (saved) msgEl.textContent += ' — Score saved.';
+							else msgEl.textContent += ' — Not saved (guest or below your best).';
+						});
 					}
 				} catch (e) {}
 			}

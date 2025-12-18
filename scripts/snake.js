@@ -103,11 +103,13 @@
 		stopLoop();
 		stopTimer();
 		msgEl.textContent = `Game Over — Final score: ${score}`;
-		// prompt to submit if this beats highscore
+		// unified save: save only if higher than user's current best
 		try {
-			if (!(window.rhSubmit && window.rhSubmit.promptIfHigher && window.rhSubmit.promptIfHigher('snake', score))) {
-				// fallback: still dispatch (optional) or do nothing
-				window.dispatchEvent(new CustomEvent('rh:submit-score', { detail: { game: 'snake', score: score, username: null } }));
+			if (window.rhSubmit && typeof window.rhSubmit.recordScore === 'function') {
+				window.rhSubmit.recordScore('snake', score).then(saved => {
+					if (saved) msgEl.textContent += ' — Score saved.';
+					else msgEl.textContent += ' — Not saved (guest or below your best).';
+				}).catch(()=>{ msgEl.textContent += ' — Save failed.'; });
 			}
 		} catch (e) {}
 	}

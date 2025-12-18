@@ -68,10 +68,14 @@
 				// treat as finishing with current runScore
 				stopTimer();
 				gameActive = false;
-				// prompt if higher
-				if (!(window.rhSubmit && window.rhSubmit.promptIfHigher && window.rhSubmit.promptIfHigher('sliding-puzzle', runScore))) {
-					// not higher or prompt unavailable: dispatch anyway (non-submission) or just show note
-					if (msgEl) msgEl.textContent = `Run ended. Final run score: ${runScore}`;
+				// unified auto-save-if-higher
+				if (window.rhSubmit && typeof window.rhSubmit.recordScore === 'function') {
+					window.rhSubmit.recordScore('sliding-puzzle', runScore).then(saved => {
+						if (saved) msgEl.textContent = `Run ended. Final run score: ${runScore} — Saved to your account.`;
+						else msgEl.textContent = `Run ended. Final run score: ${runScore} — Not saved (guest or below best).`;
+					}).catch(()=>{ msgEl.textContent = `Run ended. Final run score: ${runScore} — Save failed.`; });
+				} else {
+					msgEl.textContent = `Run ended. Final run score: ${runScore}`;
 				}
 			});
 		}
@@ -268,28 +272,30 @@
 		msgEl.textContent = `Time's up! Run ended. Final run score: ${runScore}`;
 		updateTimerUI();
 
-		// Ask the user to submit if this run beats the current high
 		try {
-			if (window.rhSubmit && window.rhSubmit.promptIfHigher) {
-				const shown = window.rhSubmit.promptIfHigher('sliding-puzzle', runScore);
-				if (!shown) {
-					// not higher => optionally save for logged-in users (existing behavior)
-					if (window.auth && window.auth.shouldRecordScores && window.auth.shouldRecordScores()) {
-						saveScoreForUser(runScore);
-						msgEl.textContent += ' — Saved to your account.';
-					} else {
-						msgEl.textContent += ' — Not saved (guest/not logged in).';
-					}
-				}
+			if (window.rhSubmit && typeof window.rhSubmit.recordScore === 'function') {
+				window.rhSubmit.recordScore('sliding-puzzle', runScore).then(saved => {
+					if (saved) msgEl.textContent += ' — Saved to your account.';
+					else msgEl.textContent += ' — Not saved (guest or below best).';
+				}).catch(()=>{ msgEl.textContent += ' — Save failed.'; });
+			} else {
+				// legacy local save path removed in favor of unified helper
+				msgEl.textContent += ' — Not saved (no submission helper).';
 			}
 		} catch (e) {}
 		gameActive = false;
 	}
 
 	function saveScoreForUser(addScore) {
+		// kept only for backward compatibility but now delegates to rhSubmit if available
 		try {
-			const session = window.auth.getCurrentUser();
+			const session = window.auth.getCurrentUser && window.auth.getCurrentUser();
 			if (!session || session.guest) return;
+			if (window.rhSubmit && typeof window.rhSubmit.recordScore === 'function') {
+				window.rhSubmit.recordScore('sliding-puzzle', addScore);
+				return;
+			}
+			// fallback local aggregation (rare)
 			const raw = localStorage.getItem(SCORES_KEY);
 			const map = raw ? JSON.parse(raw) : {};
 			const key = session.username.toLowerCase();
