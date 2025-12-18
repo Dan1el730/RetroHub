@@ -126,8 +126,8 @@ main {
 
 .content-grid {
     display: grid;
-    /* Two columns for all main content blocks */
-    grid-template-columns: 2fr 1fr; /* Featured gets 2 parts, Sidebar (Most Played) gets 1 part */
+    /* Two columns for all main content blocks (give More space to the Most Played sidebar) */
+    grid-template-columns: 1.4fr 1fr; /* Featured slightly smaller, Sidebar larger */
     gap: 40px;
 }
 
@@ -362,6 +362,32 @@ body.light-theme .play-button:hover {
      background-color: #0056b3;
 }
 
+.stat-red {
+    color: #ff0000 !important;
+    font-weight: 800 !important;
+    display: block;
+    margin-top: 2px;
+}
+
+/* 2. Leaderboard Text Fix */
+.lb-entry, 
+.lb-rank, 
+.lb-id, 
+.lb-score,
+#lb-inner div {
+    color: #ff0000 !important;
+    font-weight: 700 !important;
+}
+
+/* 3. Ensure Thumbnails are preserved */
+.game-item img {
+    display: block !important;
+    max-width: 160px;
+    border-radius: 8px;
+}
+
+
+
 /* Small-screen tweak: reduce nav gap and make header wrap if needed */
 @media (max-width: 720px) {
     header {
@@ -446,4 +472,47 @@ body.light-theme .play-button:hover {
         width: calc(100vw - 40px);
         height: calc((100vw - 40px) * 0.7);
     }
+}
+
+/* Container for the icons to ensure they wrap nicely if there are many */
+.history-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px; /* Space between icons */
+    padding: 10px 0;
+}
+
+/* The actual button/icon container */
+.history-icon {
+    width: 258px;               /* Increased from default */
+    height: 258px;              /* Increased from default */
+    padding: 0;
+    border-radius: 8px;        /* Slightly rounded corners */
+    border: 2px solid #444;
+    background: #222;
+    cursor: pointer;
+    overflow: hidden;          /* Keeps image inside the radius */
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+/* Make the image fill the button entirely */
+.history-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;         /* Prevents stretching/distortion */
+    display: block;
+}
+
+/* Hover effect for better UX */
+.history-icon:not(.empty):hover {
+    transform: scale(1.1);     /* Pops out slightly when hovered */
+    border-color: #007bff;     /* Change to your theme color */
+}
+
+/* Style for the empty slots */
+.history-icon.empty {
+    background: #333;
+    border: 2px dashed #555;
+    cursor: default;
+    opacity: 0.5;
 }

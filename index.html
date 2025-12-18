@@ -135,9 +135,10 @@
             align-items: center;
             gap: 12px;
             justify-content: center;
-            position: sticky;
-            top: 0;
-            z-index: 110; /* above header */
+            position: relative; /* changed from sticky */
+            top: auto;
+            z-index: 100;
+            min-height: var(--leaderboard-height);
         }
         #leaderboard-bar .lb-inner { display:flex; gap:16px; align-items:center; }
         #leaderboard-bar .lb-item { display:flex; flex-direction:column; align-items:center; min-width:120px; }
@@ -145,9 +146,45 @@
         #leaderboard-bar .lb-score { font-weight:900; color:var(--primary-color); font-size:1.05em; }
         #leaderboard-refresh { margin-left:12px; padding:6px 10px; border-radius:6px; border:0; background:#2b8cff; color:#fff; cursor:pointer; }
 
+        /* History UI */
+        .history-players { display:flex; flex-direction:column; gap:12px; margin:12px 0; }
+        .history-panel { background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:8px; }
+        .history-panel .hp-header { display:flex; align-items:center; justify-content:space-between; gap:8px; font-weight:700; color:#fff; }
+        .history-icons { display:flex; gap:8px; overflow-x:auto; padding:6px 2px; }
+        .history-icon { width:56px; height:56px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:#0b0b0b; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:4px; }
+        .history-icon img { width:100%; height:100%; object-fit:cover; border-radius:6px; }
+        .history-icon.empty { opacity:0.28; filter:grayscale(70%); pointer-events:none; }
+        .history-highlight { outline: 3px solid #ffd400; outline-offset: 4px; transition: outline .2s ease; }
+
         /* Small screens */
         @media (max-width:700px) {
             header .search-box { flex: 1 1 auto; max-width: none; }
+        }
+
+        /* layout helpers: reserve space for leaderboard so it doesn't overlap header */
+        :root { --leaderboard-height: 56px; }
+
+        /* Leaderboard: no longer sticky so it scrolls away with the page */
+        #leaderboard-bar {
+            position: relative; /* changed from sticky */
+            top: auto;
+            z-index: 100;
+            min-height: var(--leaderboard-height);
+        }
+
+        /* ensure header is sticky at the very top (header stays, leaderboard scrolls away) */
+        header {
+            position: sticky;
+            top: 0; /* changed to 0 so header is pinned to viewport top */
+            z-index: 120; /* above leaderboard and content so controls remain clickable */
+            background: inherit;
+        }
+
+        /* make sure auth button and controls keep pointer-events enabled */
+        header .controls,
+        header .auth-area,
+        #auth-btn {
+            pointer-events: auto;
         }
     </style>
 </head>
@@ -207,24 +244,9 @@
         <aside class="top-games">
             <h2>Most Played</h2>
             <div id="top-games-list" class="game-list">
-                <div class="game-item">
-                    <div class="game-details">
-                        <div class="game-icon-placeholder"></div>
-                        <div>
-                            <p class="game-name">Astro Destroyer</p>
-                            <p class="game-desc">Place Quest</p>
-                        </div>
-                    </div>
-                    <button class="play-button">Play</button>
-                </div>
+                <!-- Populated dynamically by scripts/metrics.js -->
             </div>
         </aside>
-
-        <section class="new-releases-games">
-            <h2>New Releases</h2>
-            <div class="game-list">
-                </div>
-        </section>
 
         <section class="action-games">
             <h2>Action Games</h2>
@@ -521,8 +543,8 @@
         
         <section class="history-section">
             <h2>History</h2>
-            <div class="game-list">
-                </div>
+            <!-- container populated by scripts/history.js -->
+            <div id="history-players" class="history-players"></div>
         </section>
         
     </main>
@@ -639,5 +661,8 @@
     <script src="scripts/game-2048.js"></script>
     <script src="scripts/snake.js"></script>
     <script src="scripts/search.js"></script>
+
+    <!-- History manager -->
+    <script src="scripts/history.js"></script>
 </body>
 </html>

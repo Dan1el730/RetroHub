@@ -23,38 +23,45 @@
 
 	// Attach small metrics area into each .game-item if missing
 	function attachMetricsToItems() {
-		// Only attach to game-items that are part of the main content (exclude sidebar #top-games-list)
-		const items = Array.from(document.querySelectorAll('main.content-grid .game-item')).filter(it => !it.closest('#top-games-list'));
-		items.forEach(it => {
-			if (!it.querySelector('.game-metrics')) {
-				const wrap = document.createElement('div');
-				wrap.className = 'game-metrics';
-				wrap.style.marginTop = '6px';
-				wrap.style.fontSize = '0.9em';
-				wrap.style.color = '#fff';
-				wrap.innerHTML = 'Popularity: <span class="pop-count">0</span> • Highest: <span class="high-score">0</span>';
-				// Place after description if present
-				const desc = it.querySelector('.game-desc');
-				if (desc && desc.parentNode) desc.parentNode.parentNode.appendChild(wrap);
-				else it.appendChild(wrap);
-			}
-		});
+		// Remove legacy inline metrics blocks to avoid duplicate metrics (we rely on updateAllUI's red stat box)
+		const legacy = Array.from(document.querySelectorAll('main.content-grid .game-item .game-metrics'));
+		legacy.forEach(el => el.remove());
+		// Ensure updateAllUI will create the proper red-styled metrics inside each .game-item/.game-details
 		updateAllUI();
 	}
 
 	function updateAllUI() {
-		const counts = loadJSON(PLAY_KEY);
+		const plays = loadJSON(PLAY_KEY);
 		const highs = loadJSON(HIGH_KEY);
-		document.querySelectorAll('.game-item').forEach(it => {
-			const key = deriveGameKey(it);
-			const popEl = it.querySelector('.pop-count');
-			const highEl = it.querySelector('.high-score');
-			if (popEl) popEl.textContent = String(counts[key] || 0);
-			if (highEl) highEl.textContent = highs[key] ? String(highs[key].score) : '0';
+
+		document.querySelectorAll('.game-item').forEach(item => {
+			const gk = deriveGameKey(item);
+			if (!gk) return;
+
+			const details = item.querySelector('.game-details');
+			if (!details) return;
+
+			// Check for or create the stats container
+			let statBox = details.querySelector('.metrics-display-box');
+			if (!statBox) {
+				statBox = document.createElement('div');
+				statBox.className = 'metrics-display-box';
+				details.appendChild(statBox);
+			}
+
+			const pCount = plays[gk] || 0;
+			const hEntry = highs[gk];
+			const hScore = hEntry ? hEntry.score : 0;
+
+			// Apply the 'stat-red' class here
+			statBox.innerHTML = `
+				<div class="stat-red">Popularity: ${pCount}</div>
+				<div class="stat-red">Highest: ${hScore}</div>
+			`;
 		});
-		// update top panel and featured carousel whenever UI updates
+
+		// Refresh the Most Played panel after updating item metrics
 		updateMostPlayedPanel();
-		refreshFeaturedCarouselData();
 	}
 
 	// increment play counts (called by global click handler in metrics earlier)
@@ -108,19 +115,68 @@
 		const topContainer = document.getElementById('top-games-list');
 		if (!topContainer) return;
 		const sorted = getSortedGameObjects();
-		if (sorted.length === 0) return;
+		if (sorted.length === 0) {
+			topContainer.innerHTML = '';
+			return;
+		}
 		const top = sorted[0];
-		// clear and insert a clone of its original .game-item (to preserve button dataset)
+
+		// Build a fresh game-item using the sorted data (ensures thumbnail & metrics are present)
+		const wrapper = document.createElement('div');
+		wrapper.className = 'game-item';
+
+		const details = document.createElement('div');
+		details.className = 'game-details';
+
+		// Icon area (preserve inner HTML from original icon if available)
+		const iconWrap = document.createElement('div');
+		iconWrap.className = 'game-icon-placeholder';
+		iconWrap.style.width = '120px';
+		iconWrap.style.height = '120px';
+		iconWrap.style.minWidth = '120px';
+		iconWrap.style.minHeight = '120px';
+		iconWrap.innerHTML = top.thumbHtml || '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#aaa">No image</div>';
+
+		// Name + desc
+		const textWrap = document.createElement('div');
+		const nameP = document.createElement('p');
+		nameP.className = 'game-name';
+		nameP.textContent = top.name || 'Unknown Game';
+		const descP = document.createElement('p');
+		descP.className = 'game-desc';
+		descP.textContent = top.desc || '';
+
+		textWrap.appendChild(nameP);
+		textWrap.appendChild(descP);
+
+		details.appendChild(iconWrap);
+		details.appendChild(textWrap);
+
+		// Play button with dataset so metrics increment works
+		const playBtn = document.createElement('button');
+		playBtn.className = 'play-button';
+		playBtn.dataset.game = top.key || '';
+		playBtn.textContent = 'Play';
+
+		// Metrics display (use same classes as updateAllUI expects)
+		const statBox = document.createElement('div');
+		statBox.className = 'metrics-display-box';
+		statBox.innerHTML = `
+			<div class="stat-red">Popularity: ${top.pop || 0}</div>
+			<div class="stat-red">Highest: ${top.high || 0}</div>
+		`;
+
+		// assemble
+		wrapper.appendChild(details);
+		wrapper.appendChild(playBtn);
+		// attach stats under details (consistent with updateAllUI)
+		details.appendChild(statBox);
+
+		// replace container content
 		topContainer.innerHTML = '';
-		const node = top.itemEl.cloneNode(true);
-		// ensure the metrics counts are visible/updated
-		const counts = loadJSON(PLAY_KEY);
-		const highs = loadJSON(HIGH_KEY);
-		const popEl = node.querySelector('.pop-count');
-		if (popEl) popEl.textContent = String(counts[top.key] || 0);
-		const highEl = node.querySelector('.high-score');
-		if (highEl) highEl.textContent = highs[top.key] ? String(highs[top.key].score) : '0';
-		topContainer.appendChild(node);
+		topContainer.appendChild(wrapper);
+
+		// done (updateAllUI will call this function when appropriate)
 	}
 
 	// Featured carousel (top 5) rendering & rotation
