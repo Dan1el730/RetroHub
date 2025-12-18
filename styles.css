@@ -484,8 +484,8 @@ body.light-theme .play-button:hover {
 
 /* The actual button/icon container */
 .history-icon {
-    width: 258px;               /* Increased from default */
-    height: 258px;              /* Increased from default */
+    width: 64px;               /* Increased from default */
+    height: 64px;              /* Increased from default */
     padding: 0;
     border-radius: 8px;        /* Slightly rounded corners */
     border: 2px solid #444;

@@ -131,7 +131,7 @@
 			if (!br.alive) continue;
 			if (circleRect(ball.x, ball.y, ball.r, br.x, br.y, br.w, br.h)) {
 				br.alive = false;
-				score += 10;
+				score += 70;
 				// reflect
 				const brickCenterX = br.x + br.w / 2;
 				const brickCenterY = br.y + br.h / 2;

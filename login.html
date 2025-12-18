@@ -4,67 +4,148 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<title>RetroHub — Login</title>
-	<link rel="stylesheet" href="styles.css">
+
+	<!-- Inline auth styles (self-contained for login page) -->
 	<style>
-		/* minimal inline layout tweak for the auth forms */
-		.auth-container { max-width:420px;margin:60px auto;padding:20px;border-radius:8px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.08); }
-		.auth-field { display:block;width:100%;padding:10px;margin:8px 0;border:1px solid #ddd;border-radius:6px; }
-		.auth-actions { display:flex;gap:8px;margin-top:12px; }
-		.btn { padding:10px 14px;border-radius:6px;border:0;cursor:pointer; }
-		.btn-blue { background:#2b8cff;color:#fff; }
-		.btn-green { background:#2dd36f;color:#fff; }
-		.btn-ghost { background:#f0f0f0;color:#333; }
+		@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+		:root{
+			--accent-blue:#2b8cff;
+			--accent-green:#2dd36f;
+			--muted:#cfcfd6;
+			--danger:#ff6b6b;
+			--card-radius:14px;
+			--glass-blur:6px;
+			--font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+		}
+		body { margin:0; font-family:var(--font-family); background:linear-gradient(180deg,#07102a,#0d0d2a); color:#fff; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+		.auth-card {
+			width: min(680px,96%);
+			max-width:520px;
+			background: rgba(255,255,255,0.03);
+			border-radius:var(--card-radius);
+			padding:28px;
+			box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+			border: 1px solid rgba(255,255,255,0.06);
+			backdrop-filter: blur(var(--glass-blur));
+			-webkit-backdrop-filter: blur(var(--glass-blur));
+			display:flex; flex-direction:column; gap:16px;
+		}
+		.title { display:flex; flex-direction:column; gap:6px; }
+		h1 { margin:0; font-size:1.4rem; font-weight:700; }
+		.auth-sub { color:var(--muted); font-weight:500; font-size:0.95rem; }
+
+		.form-field{ position:relative; display:block; }
+		.form-input{
+			width:100%; padding:14px 44px 14px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.04);
+			background: transparent; color: #fff; outline:none; font-size:1rem; transition:box-shadow .18s, border-color .18s;
+		}
+		.form-input::placeholder{ color:transparent; }
+		.form-label{ position:absolute; left:12px; top:50%; transform:translateY(-50%); transition:all .18s; pointer-events:none; color:var(--muted); font-size:0.95rem; padding:0 6px; }
+		.form-input:focus + .form-label, .form-input:not(:placeholder-shown) + .form-label {
+			top:-8px; font-size:0.72rem; color:var(--accent-blue); transform:none;
+		}
+
+		.pw-toggle{ position:absolute; right:8px; top:50%; transform:translateY(-50%); width:36px; height:36px; border-radius:8px; border:0; background: rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); }
+
+		.form-actions{ display:flex; gap:10px; align-items:center; margin-top:6px; }
+		.btn{ border-radius:10px; padding:12px 16px; border:0; cursor:pointer; font-weight:700; font-size:0.95rem; display:inline-flex; align-items:center; gap:10px; justify-content:center; transition:transform .08s, box-shadow .12s; }
+		.btn:active{ transform:translateY(1px); }
+		.btn-login{ background:linear-gradient(180deg,var(--accent-blue),#1f76e6); color:#fff; box-shadow:0 8px 26px rgba(43,140,255,0.18), 0 0 10px rgba(43,140,255,0.06); }
+		.btn-register{ background:linear-gradient(180deg,var(--accent-green),#19b957); color:#062016; box-shadow:0 8px 26px rgba(45,211,111,0.14), 0 0 10px rgba(45,211,111,0.05); }
+		.btn-ghost{ background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.04); }
+
+		.pixel-spinner{ width:14px; height:14px; display:inline-block; image-rendering:pixelated; transform:translateY(-1px); }
+		.pixel-spinner:before{ content:''; display:block; width:4px; height:4px; background:rgba(255,255,255,0.95); box-shadow:6px 0 0 rgba(255,255,255,0.6),12px 0 0 rgba(255,255,255,0.35),6px 6px 0 rgba(255,255,255,0.2),12px 6px 0 rgba(255,255,255,0.1); animation:pix-rotate .9s steps(4) infinite; }
+		@keyframes pix-rotate{ 0%{opacity:1;transform:translateY(0);}50%{opacity:.65;transform:translateY(-2px);}100%{opacity:1;transform:translateY(0);} }
+
+		.btn.loading{ pointer-events:none; opacity:.95; transform:scale(.995); }
+
+		@keyframes shake{ 0%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(8px);}60%{transform:translateX(-6px);}80%{transform:translateX(4px);}100%{transform:translateX(0);} }
+		.auth-card.shake{ animation:shake .42s ease-in-out; }
+
+		#msg{ margin-top:8px; color:var(--danger); font-weight:700; min-height:20px; }
+		@media(max-width:520px){ .auth-card{ padding:18px; border-radius:12px; } .form-input{ padding:12px 44px 12px 12px; } }
 	</style>
 </head>
-<body>
-	<div class="auth-container" role="main" aria-label="Login form">
-		<h1>Login</h1>
-		<p>Login to record your scores. Not mandatory — you can play as guest.</p>
-
-		<label>
-			<input id="username" class="auth-field" placeholder="Username" autocomplete="username">
-		</label>
-		<label>
-			<input id="password" type="password" class="auth-field" placeholder="Password" autocomplete="current-password">
-		</label>
-
-		<div class="auth-actions">
-			<button id="login-btn" class="btn btn-blue">Log In</button>
-			<button id="go-register" class="btn btn-green">Register</button>
-			<button id="guest-btn" class="btn btn-ghost">Play as Guest</button>
+<body class="dark-theme">
+	<div class="auth-card" id="authCard" role="main" aria-label="Login">
+		<div class="title">
+			<h1>Welcome back</h1>
+			<div class="auth-sub">Log in to record your scores</div>
 		</div>
 
-		<div id="msg" style="margin-top:12px;color:#b00;"></div>
+		<form id="loginForm" novalidate>
+			<label class="form-field">
+				<input id="username" class="form-input" name="username" placeholder=" " autocomplete="username" />
+				<span class="form-label">Username</span>
+			</label>
+
+			<label class="form-field" style="margin-top:6px;position:relative;">
+				<input id="password" class="form-input" name="password" type="password" placeholder=" " autocomplete="current-password" />
+				<span class="form-label">Password</span>
+				<button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+				</button>
+			</label>
+
+			<div class="form-actions">
+				<button type="submit" id="loginBtn" class="btn btn-login">
+					<span class="pixel-spinner" id="loginSpinner" style="display:none"></span>
+					<span id="loginBtnText">Log In</span>
+				</button>
+				<button type="button" id="guestBtn" class="btn btn-ghost">Play as Guest</button>
+				<button type="button" id="go-register" class="btn btn-register">Register</button>
+			</div>
+
+			<div id="msg" aria-live="polite"></div>
+		</form>
 	</div>
 
 	<script src="scripts/auth.js"></script>
 	<script>
-		const loginBtn = document.getElementById('login-btn');
-		const regBtn = document.getElementById('go-register');
-		const guestBtn = document.getElementById('guest-btn');
-		const msg = document.getElementById('msg');
+		(function(){
+			const form = document.getElementById('loginForm');
+			const user = document.getElementById('username');
+			const pass = document.getElementById('password');
+			const pwToggle = document.getElementById('pwToggle');
+			const loginBtn = document.getElementById('loginBtn');
+			const loginSpinner = document.getElementById('loginSpinner');
+			const loginBtnText = document.getElementById('loginBtnText');
+			const msg = document.getElementById('msg');
+			const card = document.getElementById('authCard');
 
-		loginBtn.addEventListener('click', async () => {
-			msg.textContent = '';
-			const u = document.getElementById('username').value.trim();
-			const p = document.getElementById('password').value;
-			try {
-				await window.auth.login(u, p);
-				// back to index after login
-				window.location.href = 'index.html';
-			} catch (e) {
-				msg.textContent = e.message || 'Login failed';
-			}
-		});
+			document.getElementById('go-register').addEventListener('click', ()=> location.href='register.html');
+			document.getElementById('guestBtn').addEventListener('click', ()=> { window.auth.setGuest && window.auth.setGuest(); location.href='index.html'; });
 
-		regBtn.addEventListener('click', () => {
-			window.location.href = 'register.html';
-		});
+			pwToggle.addEventListener('click', ()=>{
+				const is = pass.type === 'password';
+				pass.type = is ? 'text' : 'password';
+				pwToggle.setAttribute('aria-label', is ? 'Hide password' : 'Show password');
+			});
 
-		guestBtn.addEventListener('click', () => {
-			window.auth.setGuest();
-			window.location.href = 'index.html';
-		});
+			function shake(){ card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); }
+
+			form.addEventListener('submit', async (ev)=>{
+				ev.preventDefault(); msg.textContent='';
+				if(!user.value.trim() || !pass.value){
+					msg.textContent = 'Please fill in both fields';
+					shake(); return;
+				}
+				loginSpinner.style.display='inline-block';
+				loginBtn.classList.add('loading');
+				loginBtnText.textContent = 'Authenticating...';
+				try {
+					await window.auth.login(user.value.trim(), pass.value);
+					setTimeout(()=> location.href = 'index.html', 600);
+				} catch (err) {
+					msg.textContent = err && err.message ? err.message : 'Authentication failed';
+					loginBtn.classList.remove('loading');
+					loginSpinner.style.display='none';
+					loginBtnText.textContent = 'Log In';
+					shake();
+				}
+			});
+		})();
 	</script>
 </body>
 </html>

@@ -24,9 +24,11 @@ if (!is_dir($dataDir)) {
 // Helper: read stored scores
 function read_scores($path) {
     if (!file_exists($path)) return [];
-    $json = file_get_contents($path);
+    $json = @file_get_contents($path);
     $arr = json_decode($json, true);
-    return is_array($arr) ? $arr : [];
+    if (!is_array($arr)) return [];
+    // reindex to ensure numeric array (prevents accidental key-based replacement)
+    return array_values($arr);
 }
 
 // Helper: write scores with locking
@@ -37,7 +39,7 @@ function write_scores($path, $arr) {
     if (!flock($fp, LOCK_EX)) { fclose($fp); return false; }
     ftruncate($fp, 0);
     rewind($fp);
-    fwrite($fp, json_encode($arr, JSON_PRETTY_PRINT));
+    fwrite($fp, json_encode(array_values($arr), JSON_PRETTY_PRINT));
     fflush($fp);
     flock($fp, LOCK_UN);
     fclose($fp);
@@ -95,14 +97,29 @@ if ($method === 'POST') {
         'score' => intval($score),
         'ts' => time()
     ];
-    $scores[] = $entry;
 
+    // If the player already exists, update only if new score is higher.
+    $found = false;
+    foreach ($scores as $idx => $s) {
+        if (isset($s['name']) && $s['name'] === $entry['name']) {
+            $found = true;
+            if ($entry['score'] > intval($s['score'])) {
+                $scores[$idx]['score'] = $entry['score'];
+                $scores[$idx]['ts'] = $entry['ts'];
+            }
+            break;
+        }
+    }
+    if (!$found) {
+        $scores[] = $entry;
+    }
+
+    // sort and trim
     usort($scores, function($a, $b) {
         if ($a['score'] === $b['score']) return $b['ts'] <=> $a['ts'];
         return $b['score'] <=> $a['score'];
     });
 
-    // keep last 200 entries
     $scores = array_slice($scores, 0, 200);
 
     $ok = write_scores($dataFile, $scores);

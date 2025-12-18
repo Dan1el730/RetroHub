@@ -50,6 +50,10 @@
 		snake = [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }];
 		dir = { x: 1, y: 0 };
 		placeFood();
+		placeFood();
+		placeFood();
+		placeFood();
+		placeFood();
 		score = 0;
 		startAt = Date.now();
 		elapsedSec = 0;
@@ -90,7 +94,7 @@
 		snake.unshift(head);
 		// eat food?
 		if (food && head.x === food.x && head.y === food.y) {
-			score += 1;
+			score += 10;
 			placeFood();
 		} else {
 			snake.pop();
